@@ -9,8 +9,8 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Karta',
-          tabBarIcon: ({ color }) => (
-            <FontAwesome5 name="map-marked-alt" size={24} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="map-marked-alt" size={size} color={color} />
           ),
         }}
       />
@@ -18,8 +18,8 @@ export default function TabsLayout() {
         name="search"
         options={{
           title: 'Sök',
-          tabBarIcon: ({ color }) => (
-            <FontAwesome5 name="search" size={24} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="search" size={size} color={color} />
           ),
         }}
       />
