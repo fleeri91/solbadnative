@@ -1,20 +1,62 @@
-import { useAuth } from '@/lib/auth-context'
 import { StyleSheet, View } from 'react-native'
-import { Button, Text } from 'react-native-paper'
+import MapView, { Marker } from 'react-native-maps'
+import { ActivityIndicator, Text } from 'react-native-paper'
+
+import { useBathingWaters } from '@/lib/queries'
+import { useEffect } from 'react'
 
 export default function Index() {
-  const { signOut, user } = useAuth()
+  const { data, isLoading, isError } = useBathingWaters()
+
+  useEffect(() => {
+    if (data) {
+      const havItems = data.watersAndAdvisories.filter(
+        (item) => item.bathingWater.waterTypeId === 1
+      )
+      const sjoItems = data.watersAndAdvisories.filter(
+        (item) => item.bathingWater.waterTypeId === 3
+      )
+      console.log('Hav:', havItems.length)
+      console.log('Sjö:', sjoItems.length)
+    }
+  }, [data])
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="dodgerblue" />
+      </View>
+    )
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <Text>Ett fel uppstod</Text>
+      </View>
+    )
+  }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text variant="headlineSmall" style={styles.title}>
-          Map View
-        </Text>
-        <Button mode="text" onPress={signOut} icon={'logout'}>
-          Logga ut
-        </Button>
-      </View>
+      <MapView style={styles.map}>
+        {data &&
+          data.watersAndAdvisories.map(({ bathingWater }) => (
+            <Marker
+              key={bathingWater.id}
+              coordinate={{
+                latitude: parseFloat(
+                  bathingWater.samplingPointPosition.latitude
+                ),
+                longitude: parseFloat(
+                  bathingWater.samplingPointPosition.longitude
+                ),
+              }}
+              title={bathingWater.name}
+              description={bathingWater.description || ''}
+            />
+          ))}
+      </MapView>
     </View>
   )
 }
@@ -22,16 +64,10 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontWeight: 'bold',
+  map: {
+    width: '100%',
+    height: '100%',
   },
 })
