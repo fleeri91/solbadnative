@@ -1,7 +1,8 @@
 import { Tabs } from 'expo-router'
 import { useColorScheme } from 'react-native'
 
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { Appbar } from 'react-native-paper'
 
 export default function TabsLayout() {
   let colorScheme = useColorScheme()
@@ -31,9 +32,19 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Karta',
-          headerTitle: '',
+          headerTitle: 'Hitta Badplats',
+          headerLeft: () => (
+            <>
+              <Appbar.Action icon="menu" onPress={() => {}} />
+            </>
+          ),
+          headerRight: () => (
+            <>
+              <Appbar.Action icon="filter" onPress={() => {}} />
+            </>
+          ),
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="map-marked-alt" size={size} color={color} />
+            <MaterialIcons name="map" size={size} color={color} />
           ),
         }}
       />
@@ -43,8 +54,15 @@ export default function TabsLayout() {
           title: 'Sök',
           headerTitle: '',
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="search" size={size} color={color} />
+            <MaterialIcons name="search" size={size} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="info/[id]"
+        options={{
+          title: '',
+          href: null,
         }}
       />
     </Tabs>
