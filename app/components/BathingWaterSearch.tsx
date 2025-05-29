@@ -1,3 +1,4 @@
+import { Link } from 'expo-router'
 import { useMemo, useState } from 'react'
 import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import { List, TextInput, useTheme } from 'react-native-paper'
@@ -65,11 +66,18 @@ export default function BathingWaterSearch({
               key={item.bathingWater.id}
               onPress={() => handleSelect(item)}
             >
-              <List.Item
-                title={item.bathingWater.name}
-                description={item.bathingWater.municipality.name}
-                titleStyle={{ color: colors.onSurface }}
-              />
+              <Link
+                href={{
+                  pathname: '/info/[id]',
+                  params: { id: `${item.bathingWater.id}` },
+                }}
+              >
+                <List.Item
+                  title={item.bathingWater.name}
+                  description={item.bathingWater.municipality.name}
+                  titleStyle={{ color: colors.onSurface }}
+                />
+              </Link>
             </TouchableOpacity>
           ))}
         </List.Section>
