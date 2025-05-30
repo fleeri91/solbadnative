@@ -1,5 +1,5 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
-import MapView, { Marker, Region } from 'react-native-maps'
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps'
 import { ActivityIndicator, Text, useTheme } from 'react-native-paper'
 
 import { GeoPosition, useGeolocation } from '@/lib/geolocation'
@@ -41,6 +41,14 @@ export default function Index() {
     }
   }
 
+  const onMarkerSelected = (marker: any) => {
+    Alert.alert(marker.name)
+  }
+
+  const calloutPressed = (ev: any) => {
+    console.log(ev)
+  }
+
   if (isLoading) {
     return (
       <View style={styles.container}>
@@ -59,23 +67,31 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <MapView ref={mapRef} style={styles.map} showsUserLocation={false}>
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        showsUserLocation={false}
+        provider={PROVIDER_GOOGLE}
+      >
         {data &&
-          data.watersAndAdvisories.map(({ bathingWater }) => (
-            <Marker
-              key={bathingWater.id}
-              coordinate={{
-                latitude: parseFloat(
-                  bathingWater.samplingPointPosition.latitude
-                ),
-                longitude: parseFloat(
-                  bathingWater.samplingPointPosition.longitude
-                ),
-              }}
-              title={bathingWater.name}
-              description={bathingWater.description || ''}
-            />
-          ))}
+          data.watersAndAdvisories
+            .filter((item) => item.bathingWater.municipality.name === 'Ronneby')
+            .map(({ bathingWater }) => (
+              <Marker
+                key={bathingWater.id}
+                coordinate={{
+                  latitude: parseFloat(
+                    bathingWater.samplingPointPosition.latitude
+                  ),
+                  longitude: parseFloat(
+                    bathingWater.samplingPointPosition.longitude
+                  ),
+                }}
+                onPress={() => onMarkerSelected(bathingWater)}
+                title={bathingWater.name}
+                description={bathingWater.description || ''}
+              />
+            ))}
 
         {myLocation && (
           <Marker

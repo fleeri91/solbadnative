@@ -1,4 +1,3 @@
-import { WaterTypeId } from '@/types/BathingWater/WaterType'
 import { useState } from 'react'
 import {
   Keyboard,
@@ -8,7 +7,9 @@ import {
   View,
 } from 'react-native'
 import { SegmentedButtons } from 'react-native-paper'
-import Autocomplete from '../components/BathingWaterSearch'
+
+import BathingWaterSearch from '@/components/BathingWaterSearch'
+import { WaterTypeId } from '@/types/BathingWater/WaterType'
 
 export default function SearchView() {
   const [segment, setSegment] = useState<string>('sea')
@@ -33,7 +34,7 @@ export default function SearchView() {
         />
 
         <View style={styles.content}>
-          <Autocomplete
+          <BathingWaterSearch
             waterType={segment === 'sea' ? WaterTypeId.HAV : WaterTypeId.SJÖ}
           />
         </View>

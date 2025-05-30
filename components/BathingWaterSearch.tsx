@@ -1,6 +1,6 @@
 import { Link } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { List, TextInput, useTheme } from 'react-native-paper'
 
 import { useBathingWaters } from '@/lib/queries'
@@ -30,16 +30,17 @@ export default function BathingWaterSearch({
 
     return data.watersAndAdvisories
       .filter(({ bathingWater }) => {
-        const nameMatch = bathingWater.name.toLowerCase().includes(lower)
+        const nameMatch = bathingWater.name.toLowerCase().startsWith(lower) // stricter start match
         const muniMatch = bathingWater.municipality.name
           .toLowerCase()
-          .includes(lower)
+          .startsWith(lower) // stricter start match
         const typeMatch = isSea
           ? bathingWater.waterTypeId === 1
           : bathingWater.waterTypeId === 3
 
         return (nameMatch || muniMatch) && typeMatch
       })
+      .sort((a, b) => a.bathingWater.name.localeCompare(b.bathingWater.name)) // ascending sort
       .slice(0, 20)
   }, [query, data, waterType])
 
@@ -60,27 +61,32 @@ export default function BathingWaterSearch({
       />
 
       {filteredData.length > 0 && (
-        <List.Section style={styles.list}>
-          {filteredData.map((item) => (
-            <TouchableOpacity
-              key={item.bathingWater.id}
-              onPress={() => handleSelect(item)}
-            >
-              <Link
-                href={{
-                  pathname: '/info/[id]',
-                  params: { id: `${item.bathingWater.id}` },
-                }}
+        <ScrollView
+          style={styles.listContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <List.Section style={styles.list}>
+            {filteredData.map((item) => (
+              <TouchableOpacity
+                key={item.bathingWater.id}
+                onPress={() => handleSelect(item)}
               >
-                <List.Item
-                  title={item.bathingWater.name}
-                  description={item.bathingWater.municipality.name}
-                  titleStyle={{ color: colors.onSurface }}
-                />
-              </Link>
-            </TouchableOpacity>
-          ))}
-        </List.Section>
+                <Link
+                  href={{
+                    pathname: '/info/[id]',
+                    params: { id: `${item.bathingWater.id}` },
+                  }}
+                >
+                  <List.Item
+                    title={item.bathingWater.name}
+                    description={item.bathingWater.municipality.name}
+                    titleStyle={{ color: colors.onSurface }}
+                  />
+                </Link>
+              </TouchableOpacity>
+            ))}
+          </List.Section>
+        </ScrollView>
       )}
     </View>
   )
@@ -94,8 +100,12 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 5,
   },
-  list: {
+  listContainer: {
+    maxHeight: 200,
+    borderRadius: 4,
     elevation: 2,
+  },
+  list: {
     borderRadius: 4,
   },
 })
