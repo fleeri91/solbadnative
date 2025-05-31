@@ -1,30 +1,23 @@
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps'
-import { ActivityIndicator, Text, useTheme } from 'react-native-paper'
+import { useRef, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
+import MapView, { Region } from 'react-native-maps'
+import { ActivityIndicator, Text } from 'react-native-paper'
+
+import { Map } from '@/components/Map'
+import MapFilter from '@/components/MapFilter'
 
 import { GeoPosition, useGeolocation } from '@/lib/geolocation'
 import { useBathingWaters } from '@/lib/queries'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { useRef, useState } from 'react'
 
 export default function Index() {
   const { data, isLoading, isError } = useBathingWaters()
-  const theme = useTheme()
   const { getCurrentLocation, loading: locating } = useGeolocation()
   const [myLocation, setMyLocation] = useState<GeoPosition | null>(null)
-
   const mapRef = useRef<MapView>(null)
 
   const handleMyLocation = async () => {
     const coords = await getCurrentLocation()
-
-    if (!coords) {
-      console.warn('No coordinates returned.')
-      return
-    }
-
-    console.log('My location:', coords)
-    console.log('MapRef:', mapRef.current)
+    if (!coords) return
 
     setMyLocation(coords)
 
@@ -34,19 +27,7 @@ export default function Index() {
       longitudeDelta: 0.05,
     }
 
-    if (mapRef.current) {
-      mapRef.current.animateToRegion(region, 1000)
-    } else {
-      console.warn('Map ref not available.')
-    }
-  }
-
-  const onMarkerSelected = (marker: any) => {
-    Alert.alert(marker.name)
-  }
-
-  const calloutPressed = (ev: any) => {
-    console.log(ev)
+    mapRef.current?.animateToRegion(region, 1000)
   }
 
   if (isLoading) {
@@ -57,7 +38,7 @@ export default function Index() {
     )
   }
 
-  if (isError) {
+  if (isError || !data) {
     return (
       <View style={styles.container}>
         <Text>Ett fel uppstod</Text>
@@ -67,55 +48,13 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        showsUserLocation={false}
-        provider={PROVIDER_GOOGLE}
-      >
-        {data &&
-          data.watersAndAdvisories
-            .filter((item) => item.bathingWater.municipality.name === 'Ronneby')
-            .map(({ bathingWater }) => (
-              <Marker
-                key={bathingWater.id}
-                coordinate={{
-                  latitude: parseFloat(
-                    bathingWater.samplingPointPosition.latitude
-                  ),
-                  longitude: parseFloat(
-                    bathingWater.samplingPointPosition.longitude
-                  ),
-                }}
-                onPress={() => onMarkerSelected(bathingWater)}
-                title={bathingWater.name}
-                description={bathingWater.description || ''}
-              />
-            ))}
-
-        {myLocation && (
-          <Marker
-            coordinate={myLocation}
-            title="Min position"
-            pinColor="dodgerblue"
-          />
-        )}
-      </MapView>
-
-      <TouchableOpacity
-        style={{
-          ...styles.myLocationButton,
-          backgroundColor: theme.colors.background,
-        }}
-        onPress={handleMyLocation}
-        disabled={locating}
-      >
-        <MaterialIcons
-          name="my-location"
-          size={24}
-          style={{ color: theme.colors.primary }}
-        />
-      </TouchableOpacity>
+      <Map
+        watersAndAdvisories={data.watersAndAdvisories}
+        myLocation={myLocation}
+        onRequestMyLocation={handleMyLocation}
+        loadingLocation={locating}
+      />
+      <MapFilter />
     </View>
   )
 }
@@ -125,22 +64,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     textAlign: 'center',
-  },
-  map: {
-    width: '100%',
-    height: '100%',
-  },
-  myLocationButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
   },
 })

@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router'
 import { useColorScheme } from 'react-native'
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { SheetManager } from 'react-native-actions-sheet'
 import { Appbar } from 'react-native-paper'
 
 export default function TabsLayout() {
@@ -40,7 +41,10 @@ export default function TabsLayout() {
           ),
           headerRight: () => (
             <>
-              <Appbar.Action icon="filter" onPress={() => {}} />
+              <Appbar.Action
+                icon="filter"
+                onPress={() => SheetManager.show('map-filter-sheet')}
+              />
             </>
           ),
           tabBarIcon: ({ color, size }) => (
@@ -49,12 +53,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="list"
         options={{
-          title: 'Sök',
+          title: 'Lista',
           headerTitle: '',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="search" size={size} color={color} />
+            <MaterialIcons name="list" size={size} color={color} />
           ),
         }}
       />
