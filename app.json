@@ -24,7 +24,12 @@
         "googleMaps": {
           "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.eriksson91.solbadnative"
     },
     "web": {
       "bundler": "metro",
@@ -51,6 +56,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d4d5c751-af8f-4abc-9a5b-6d290a954439"
+      }
     }
   }
 }
