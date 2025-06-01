@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { useEffect, useState } from 'react'
+import { useColorScheme } from 'react-native'
 import { SheetProvider } from 'react-native-actions-sheet'
 import { PaperProvider } from 'react-native-paper'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -38,6 +39,9 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
+  let colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -45,11 +49,32 @@ export default function RootLayout() {
           <PaperProvider>
             <SafeAreaProvider>
               <RouteGuard>
-                <Stack>
+                <Stack
+                  screenOptions={{
+                    headerStyle: {
+                      backgroundColor: isDark ? '#0a0a0a' : '#fafafa',
+                    },
+                    headerShadowVisible: false,
+                    headerTitleStyle: {
+                      color: isDark ? '#fafafa' : '#0a0a0a',
+                      fontWeight: '600',
+                    },
+                  }}
+                >
                   <Stack.Screen
                     name="(tabs)"
                     options={{ headerShown: false }}
                   />
+                  {/*}
+                  <Stack.Screen
+                    name="info/[id]"
+                    options={{
+                      title: '',
+                      headerBackButtonMenuEnabled: true,
+                      headerBackButtonDisplayMode: 'minimal',
+                    }}
+                  />
+                  */}
                 </Stack>
               </RouteGuard>
             </SafeAreaProvider>
