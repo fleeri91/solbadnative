@@ -1,26 +1,29 @@
 import { municipalities, MunicipalityName } from '@/constants/municipalities'
-import { useMapFilterStore } from '@/store/useMapFilter'
 import { useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { List, TextInput, useTheme } from 'react-native-paper'
 
-export default function MunicipalitySearch() {
-  const { municipality, setMunicipality } = useMapFilterStore()
-  const [query, setQuery] = useState('')
+interface Props {
+  value: MunicipalityName | ''
+  onChange: (name: MunicipalityName) => void
+}
+
+export default function MunicipalitySearch({ value, onChange }: Props) {
   const { colors } = useTheme()
+  const [searchQuery, setSearchQuery] = useState<string>(value || '')
 
   const filteredMunicipalities = useMemo(() => {
-    if (!query) return []
-    const lower = query.toLowerCase()
+    if (!searchQuery) return []
+    const lower = searchQuery.toLowerCase()
     return municipalities
       .filter((name) => name.toLowerCase().startsWith(lower))
-      .sort((a, b) => a.localeCompare(b)) // Sort ascending alphabetically
+      .sort((a, b) => a.localeCompare(b))
       .slice(0, 20)
-  }, [query])
+  }, [searchQuery])
 
   const handleSelect = (name: MunicipalityName) => {
-    setMunicipality(name)
-    setQuery(name)
+    onChange(name)
+    setSearchQuery(name)
   }
 
   return (
@@ -28,8 +31,8 @@ export default function MunicipalitySearch() {
       <TextInput
         label="Välj kommun"
         placeholder="Sök kommun"
-        value={query}
-        onChangeText={setQuery}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
         mode="outlined"
         style={styles.input}
       />
@@ -41,13 +44,13 @@ export default function MunicipalitySearch() {
         >
           <List.Section style={styles.list}>
             {filteredMunicipalities.map((name) => (
-              <TouchableOpacity
-                key={name}
-                onPress={() => handleSelect(name as MunicipalityName)}
-              >
+              <TouchableOpacity key={name} onPress={() => handleSelect(name)}>
                 <List.Item
                   title={name}
-                  titleStyle={{ color: colors.onSurface }}
+                  titleStyle={{
+                    color: colors.onSurface,
+                    fontWeight: name === value ? 'bold' : 'normal',
+                  }}
                 />
               </TouchableOpacity>
             ))}
@@ -62,6 +65,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     marginTop: 20,
+    paddingHorizontal: 16,
   },
   input: {
     marginBottom: 5,
@@ -74,5 +78,6 @@ const styles = StyleSheet.create({
     maxHeight: 200,
     borderRadius: 4,
     elevation: 2,
+    marginBottom: 10,
   },
 })
