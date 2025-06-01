@@ -20,7 +20,5 @@ export const useBathingWaterProfile = (id: string) => {
   return useQuery({
     queryKey: queryKeys.bathingWaterProfile,
     queryFn: () => getBathingWaterProfile(id),
-    staleTime: 1000 * 60 * 60 * 24,
-    refetchInterval: 1000 * 30,
   })
 }
