@@ -1,4 +1,3 @@
-import { Link } from 'expo-router'
 import { useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { List, TextInput, useTheme } from 'react-native-paper'
@@ -6,6 +5,7 @@ import { List, TextInput, useTheme } from 'react-native-paper'
 import { useBathingWaters } from '@/lib/queries'
 import { WatersAndAdvisory } from '@/types/BathingWater/BathingWaters'
 import { WaterTypeId } from '@/types/BathingWater/WaterType'
+import { SheetManager } from 'react-native-actions-sheet'
 
 interface BathingWaterSearchProps {
   placeholder?: string
@@ -46,6 +46,10 @@ export default function BathingWaterSearch({
 
   const handleSelect = (item: WatersAndAdvisory) => {
     setQuery(item.bathingWater.name)
+
+    SheetManager.show('bathing-profile-sheet', {
+      payload: { id: item.bathingWater.id },
+    })
   }
 
   return (
@@ -71,18 +75,11 @@ export default function BathingWaterSearch({
                 key={item.bathingWater.id}
                 onPress={() => handleSelect(item)}
               >
-                <Link
-                  href={{
-                    pathname: '/info/[id]',
-                    params: { id: `${item.bathingWater.id}` },
-                  }}
-                >
-                  <List.Item
-                    title={item.bathingWater.name}
-                    description={item.bathingWater.municipality.name}
-                    titleStyle={{ color: colors.onSurface }}
-                  />
-                </Link>
+                <List.Item
+                  title={item.bathingWater.name}
+                  description={item.bathingWater.municipality.name}
+                  titleStyle={{ color: colors.onSurface }}
+                />
               </TouchableOpacity>
             ))}
           </List.Section>
