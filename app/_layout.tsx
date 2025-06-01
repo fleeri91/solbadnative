@@ -1,14 +1,19 @@
+import Entypo from '@expo/vector-icons/Entypo'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import * as Font from 'expo-font'
 import { Stack, useRouter, useSegments } from 'expo-router'
-import { useEffect, useState } from 'react'
+import * as SplashScreen from 'expo-splash-screen'
+import { useCallback, useEffect, useState } from 'react'
 import { useColorScheme } from 'react-native'
 import { SheetProvider } from 'react-native-actions-sheet'
 import { PaperProvider } from 'react-native-paper'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { AuthProvider, useAuth } from '@/lib/auth-context'
 import '@/lib/sheet'
 
-import { AuthProvider, useAuth } from '@/lib/auth-context'
+// 👇 Prevent splash screen from hiding too early
+SplashScreen.preventAutoHideAsync().catch(() => {})
 
 const queryClient = new QueryClient()
 
@@ -16,7 +21,6 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { user, isLoadingUser } = useAuth()
   const segments = useSegments()
-
   const [isRouterReady, setIsRouterReady] = useState(false)
 
   useEffect(() => {
@@ -39,15 +43,46 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
-  let colorScheme = useColorScheme()
+  const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
+  const [appIsReady, setAppIsReady] = useState(false)
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Pre-load fonts, make any API calls you need to do here
+        await Font.loadAsync(Entypo.font)
+        // Artificially delay for two seconds to simulate a slow loading
+        // experience. Remove this if you copy and paste the code!
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+      } catch (e) {
+        console.warn(e)
+      } finally {
+        // Tell the application to render
+        setAppIsReady(true)
+      }
+    }
+
+    prepare()
+  }, [])
+
+  // Hide splash screen once layout is complete
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      await SplashScreen.hideAsync()
+    }
+  }, [appIsReady])
+
+  if (!appIsReady) {
+    return null
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SheetProvider>
           <PaperProvider>
-            <SafeAreaProvider>
+            <SafeAreaProvider onLayout={onLayoutRootView}>
               <RouteGuard>
                 <Stack
                   screenOptions={{
@@ -65,16 +100,6 @@ export default function RootLayout() {
                     name="(tabs)"
                     options={{ headerShown: false }}
                   />
-                  {/*}
-                  <Stack.Screen
-                    name="info/[id]"
-                    options={{
-                      title: '',
-                      headerBackButtonMenuEnabled: true,
-                      headerBackButtonDisplayMode: 'minimal',
-                    }}
-                  />
-                  */}
                 </Stack>
               </RouteGuard>
             </SafeAreaProvider>
