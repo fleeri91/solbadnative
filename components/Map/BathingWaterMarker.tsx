@@ -2,7 +2,6 @@
 import { BathingWater } from '@/types/BathingWater/BathingWaters'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { Marker } from 'react-native-maps'
-import DropMarker from './DropMarker'
 
 type Props = {
   water: BathingWater
@@ -13,6 +12,8 @@ export default function BathingWaterMarker({ water, onPress }: Props) {
   const latitude = parseFloat(water.samplingPointPosition.latitude)
   const longitude = parseFloat(water.samplingPointPosition.longitude)
 
+  if (isNaN(latitude) || isNaN(longitude)) return null
+
   return (
     <Marker
       coordinate={{ latitude, longitude }}
@@ -20,9 +21,7 @@ export default function BathingWaterMarker({ water, onPress }: Props) {
       description={water.description || ''}
       onPress={() => onPress(water)}
     >
-      <DropMarker>
-        <MaterialIcons name="location-pin" size={36} color="tomato" />
-      </DropMarker>
+      <MaterialIcons name="location-pin" size={36} color="tomato" />
     </Marker>
   )
 }
