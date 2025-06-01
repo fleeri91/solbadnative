@@ -1,11 +1,14 @@
+// screens/index.tsx
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import MapView, { Region } from 'react-native-maps'
-import { ActivityIndicator, Text } from 'react-native-paper'
+import { ActivityIndicator, IconButton, Text } from 'react-native-paper'
 
 import { Map } from '@/components/Map'
 import MapFilter from '@/components/MapFilter'
 
+import { useFilteredBathingWaters } from '@/hooks/useFilteredBathingWaters'
 import { GeoPosition, useGeolocation } from '@/lib/geolocation'
 import { useBathingWaters } from '@/lib/queries'
 
@@ -14,6 +17,9 @@ export default function Index() {
   const { getCurrentLocation, loading: locating } = useGeolocation()
   const [myLocation, setMyLocation] = useState<GeoPosition | null>(null)
   const mapRef = useRef<MapView>(null)
+
+  const allWaters = data?.watersAndAdvisories.map((w) => w.bathingWater) || []
+  const filteredWaters = useFilteredBathingWaters(allWaters)
 
   const handleMyLocation = async () => {
     const coords = await getCurrentLocation()
@@ -26,8 +32,7 @@ export default function Index() {
       latitudeDelta: 0.05,
       longitudeDelta: 0.05,
     }
-
-    mapRef.current?.animateToRegion(region, 1000)
+    mapRef.current?.animateToRegion(region, 300)
   }
 
   if (isLoading) {
@@ -49,12 +54,23 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Map
-        watersAndAdvisories={data.watersAndAdvisories}
+        bathingWaters={filteredWaters}
+        mapRef={mapRef}
         myLocation={myLocation}
-        onRequestMyLocation={handleMyLocation}
-        loadingLocation={locating}
       />
       <MapFilter />
+      <View style={styles.buttonContainer}>
+        <IconButton
+          icon={() => (
+            <MaterialIcons name="my-location" size={24} color="white" />
+          )}
+          mode="contained"
+          onPress={handleMyLocation}
+          loading={locating}
+          disabled={locating}
+          style={styles.myLocationButton}
+        />
+      </View>
     </View>
   )
 }
@@ -62,7 +78,13 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    textAlign: 'center',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 40,
+    right: 20,
+  },
+  myLocationButton: {
+    borderRadius: 8,
   },
 })
