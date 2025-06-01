@@ -13,7 +13,6 @@ export function useGeolocation() {
     try {
       setLoading(true)
 
-      // Ask for permissions
       const { status } = await Location.requestForegroundPermissionsAsync()
       if (status !== 'granted') {
         console.warn('Location permission not granted')
@@ -21,7 +20,6 @@ export function useGeolocation() {
         return null
       }
 
-      // Get current position
       const {
         coords: { latitude, longitude },
       } = await Location.getCurrentPositionAsync({
