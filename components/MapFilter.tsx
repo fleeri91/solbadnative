@@ -1,5 +1,3 @@
-// MapFilter.tsx
-
 import { useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import ActionSheet, { ActionSheetRef } from 'react-native-actions-sheet'
@@ -29,7 +27,10 @@ export default function MapFilter() {
       ref={actionSheetRef}
       gestureEnabled={true}
       indicatorStyle={{ width: 100 }}
-      snapPoints={[90]}
+      closable
+      disableDragBeyondMinimumSnapPoint
+      containerStyle={{ height: '90%' }}
+      springOffset={300}
     >
       <View style={styles.actionSheetcontainer}>
         <MunicipalitySearch
