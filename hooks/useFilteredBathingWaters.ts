@@ -1,5 +1,6 @@
 import { useMapFilterStore } from '@/store/useMapFilter'
 import { BathingWater } from '@/types/BathingWater/BathingWaters'
+import { WaterTypeId } from '@/types/BathingWater/WaterType'
 import { useMemo } from 'react'
 
 function isInsideSweden(lat: number, lon: number): boolean {
@@ -15,7 +16,11 @@ export const useFilteredBathingWaters = (
     const inSweden = bathingWaters.filter((bw) => {
       const lat = parseFloat(bw.samplingPointPosition.latitude)
       const lon = parseFloat(bw.samplingPointPosition.longitude)
-      return isInsideSweden(lat, lon)
+      // Only Sea (1) and Lake (3)
+      const isWaterTypeValid =
+        bw.waterTypeId === WaterTypeId.HAV || bw.waterTypeId === WaterTypeId.SJÖ
+
+      return isInsideSweden(lat, lon) && isWaterTypeValid
     })
 
     if (!municipality) return inSweden
