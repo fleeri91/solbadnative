@@ -1,7 +1,8 @@
 import { BathingWater } from '@/types/BathingWater/BathingWaters'
-import React from 'react'
+import React, { useState } from 'react'
 import { StyleSheet } from 'react-native'
-import MapView, { Marker } from 'react-native-maps'
+import MapView, { Region } from 'react-native-maps'
+import BathingWaterMarker from './BathingWaterMarker'
 
 interface MapProps {
   bathingWaters: BathingWater[]
@@ -10,19 +11,25 @@ interface MapProps {
 }
 
 export default function Map({ bathingWaters, mapRef, myLocation }: MapProps) {
+  const [zoomLevel, setZoomLevel] = useState(12)
+
+  const handleRegionChangeComplete = (region: Region) => {
+    const zoom = Math.round(Math.log2(360 / region.latitudeDelta))
+    setZoomLevel(zoom)
+  }
+
   return (
     <MapView
       ref={mapRef}
       style={StyleSheet.absoluteFillObject}
       showsUserLocation={!!myLocation}
+      onRegionChangeComplete={handleRegionChangeComplete}
     >
       {bathingWaters.map((water) => (
-        <Marker
+        <BathingWaterMarker
           key={water.id}
-          coordinate={{
-            latitude: parseFloat(water.samplingPointPosition.latitude),
-            longitude: parseFloat(water.samplingPointPosition.longitude),
-          }}
+          water={water}
+          zoomLevel={zoomLevel}
         />
       ))}
     </MapView>
