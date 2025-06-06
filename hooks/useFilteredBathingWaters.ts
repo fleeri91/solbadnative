@@ -1,33 +1,50 @@
+import { GeoPosition } from '@/lib/geolocation'
+import { getDistanceInKm, isInsideSweden } from '@/lib/helpers'
 import { useMapFilterStore } from '@/store/useMapFilter'
 import { BathingWater } from '@/types/BathingWater/BathingWaters'
 import { WaterTypeId } from '@/types/BathingWater/WaterType'
 import { useMemo } from 'react'
 
-function isInsideSweden(lat: number, lon: number): boolean {
-  return lat >= 55.0 && lat <= 69.1 && lon >= 10.9 && lon <= 24.2
-}
-
 export const useFilteredBathingWaters = (
-  bathingWaters: BathingWater[]
+  bathingWaters: BathingWater[],
+  myLocation: GeoPosition | null
 ): BathingWater[] => {
-  const { municipality } = useMapFilterStore()
+  const { filterMode, municipality, maxDistance } = useMapFilterStore()
 
   return useMemo(() => {
-    const inSweden = bathingWaters.filter((bw) => {
+    const baseFiltered = bathingWaters.filter((bw) => {
       const lat = parseFloat(bw.samplingPointPosition.latitude)
       const lon = parseFloat(bw.samplingPointPosition.longitude)
-      // Only Sea (1) and Lake (3)
       const isWaterTypeValid =
         bw.waterTypeId === WaterTypeId.HAV || bw.waterTypeId === WaterTypeId.SJÖ
-
       return isInsideSweden(lat, lon) && isWaterTypeValid
     })
 
-    if (!municipality) return inSweden
+    if (filterMode === 'municipality' && municipality) {
+      return baseFiltered.filter(
+        (bw) =>
+          bw.municipality?.name?.toLowerCase() === municipality.toLowerCase()
+      )
+    }
 
-    return inSweden.filter(
-      (bw) =>
-        bw.municipality?.name?.toLowerCase() === municipality.toLowerCase()
-    )
-  }, [bathingWaters, municipality])
+    if (
+      filterMode === 'nearby' &&
+      myLocation &&
+      maxDistance !== null &&
+      maxDistance !== undefined
+    ) {
+      return baseFiltered.filter((bw) => {
+        const lat = parseFloat(bw.samplingPointPosition.latitude)
+        const lon = parseFloat(bw.samplingPointPosition.longitude)
+        const dist = getDistanceInKm(
+          myLocation.latitude,
+          myLocation.longitude,
+          lat,
+          lon
+        )
+        return dist <= maxDistance
+      })
+    }
+    return baseFiltered
+  }, [bathingWaters, filterMode, municipality, maxDistance, myLocation])
 }
