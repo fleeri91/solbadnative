@@ -1,6 +1,12 @@
 import { municipalities, MunicipalityName } from '@/constants/municipalities'
 import { useMemo, useState } from 'react'
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native'
 import { List, TextInput, useTheme } from 'react-native-paper'
 
 interface Props {
@@ -13,12 +19,12 @@ export default function MunicipalitySearch({ value, onChange }: Props) {
   const [searchQuery, setSearchQuery] = useState<string>(value || '')
 
   const filteredMunicipalities = useMemo(() => {
-    if (!searchQuery) return []
     const lower = searchQuery.toLowerCase()
-    return municipalities
-      .filter((name) => name.toLowerCase().startsWith(lower))
-      .sort((a, b) => a.localeCompare(b))
-      .slice(0, 20)
+    const filtered = searchQuery
+      ? municipalities.filter((name) => name.toLowerCase().startsWith(lower))
+      : municipalities
+
+    return [...filtered].sort((a, b) => a.localeCompare(b))
   }, [searchQuery])
 
   const handleSelect = (name: MunicipalityName) => {
@@ -27,57 +33,46 @@ export default function MunicipalitySearch({ value, onChange }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <TextInput
-        label="Välj kommun"
-        placeholder="Sök kommun"
+        label="Sök kommun"
         value={searchQuery}
         onChangeText={setSearchQuery}
-        mode="outlined"
+        mode="flat"
         style={styles.input}
       />
-
-      {filteredMunicipalities.length > 0 && (
-        <ScrollView
-          style={styles.listContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          <List.Section style={styles.list}>
-            {filteredMunicipalities.map((name) => (
-              <TouchableOpacity key={name} onPress={() => handleSelect(name)}>
-                <List.Item
-                  title={name}
-                  titleStyle={{
-                    color: colors.onSurface,
-                    fontWeight: name === value ? 'bold' : 'normal',
-                  }}
-                />
-              </TouchableOpacity>
-            ))}
-          </List.Section>
-        </ScrollView>
-      )}
-    </View>
+      <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+        <List.Section>
+          {filteredMunicipalities.map((name) => (
+            <TouchableOpacity key={name} onPress={() => handleSelect(name)}>
+              <List.Item
+                title={name}
+                titleStyle={{
+                  color: colors.onSurface,
+                  fontWeight: name === value ? 'bold' : 'normal',
+                }}
+              />
+            </TouchableOpacity>
+          ))}
+        </List.Section>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    marginTop: 20,
+    flex: 1,
     paddingHorizontal: 16,
+    paddingTop: 20,
   },
   input: {
-    marginBottom: 5,
-  },
-  list: {
-    elevation: 2,
-    borderRadius: 4,
-  },
-  listContainer: {
-    maxHeight: 200,
-    borderRadius: 4,
-    elevation: 2,
     marginBottom: 10,
+  },
+  scrollView: {
+    flex: 1,
   },
 })

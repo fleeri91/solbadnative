@@ -9,6 +9,7 @@ import { SheetProvider } from 'react-native-actions-sheet'
 import { PaperProvider } from 'react-native-paper'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { darkTheme, lightTheme } from '@/constants/theme'
 import { AuthProvider, useAuth } from '@/lib/auth-context'
 import '@/lib/sheet'
 
@@ -80,8 +81,8 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SheetProvider>
-          <PaperProvider>
+        <PaperProvider theme={isDark ? darkTheme : lightTheme}>
+          <SheetProvider>
             <SafeAreaProvider onLayout={onLayoutRootView}>
               <RouteGuard>
                 <Stack
@@ -100,11 +101,15 @@ export default function RootLayout() {
                     name="(tabs)"
                     options={{ headerShown: false }}
                   />
+                  <Stack.Screen
+                    name="onboarding"
+                    options={{ headerShown: false }}
+                  />
                 </Stack>
               </RouteGuard>
             </SafeAreaProvider>
-          </PaperProvider>
-        </SheetProvider>
+          </SheetProvider>
+        </PaperProvider>
       </AuthProvider>
     </QueryClientProvider>
   )

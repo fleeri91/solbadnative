@@ -1,6 +1,6 @@
-// screens/index.tsx
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'expo-router'
+import { useEffect, useRef, useState } from 'react'
 import { InteractionManager, StyleSheet, View } from 'react-native'
 import MapView, { Region } from 'react-native-maps'
 import { ActivityIndicator, IconButton, Text } from 'react-native-paper'
@@ -9,8 +9,10 @@ import { Map } from '@/components/Map'
 import MapFilter from '@/components/MapFilter'
 
 import { useMapFilterStore } from '@/store/useMapFilter'
+import { useUserStore } from '@/store/useUser'
 
 import { useFilteredBathingWaters } from '@/hooks/useFilteredBathingWaters'
+
 import { GeoPosition, useGeolocation } from '@/lib/geolocation'
 import { useBathingWaters } from '@/lib/queries'
 
@@ -22,6 +24,28 @@ const DEFAULT_PADDING = {
 }
 
 export default function Index() {
+  const router = useRouter()
+  const { isOnboarded } = useUserStore()
+  const [hydrated, setHydrated] = useState(false)
+
+  // Zustand persist hydration
+  useEffect(() => {
+    if (useUserStore.persist.hasHydrated()) {
+      setHydrated(true)
+    } else {
+      const unsub = useUserStore.persist.onFinishHydration(() => {
+        setHydrated(true)
+      })
+      return () => unsub?.()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (hydrated && isOnboarded) {
+      router.replace('/onboarding')
+    }
+  }, [hydrated, isOnboarded])
+
   const { data, isLoading, isError } = useBathingWaters()
   const { getCurrentLocation, loading: locating } = useGeolocation()
   const [myLocation, setMyLocation] = useState<GeoPosition | null>(null)
@@ -44,7 +68,6 @@ export default function Index() {
       longitudeDelta: 0.05,
     }
 
-    // Wait for interactions before animating
     await new Promise<void>((resolve) => {
       InteractionManager.runAfterInteractions(() => {
         resolve()
@@ -79,40 +102,13 @@ export default function Index() {
     fitMap()
   }, [municipality])
 
-  const fitMapToFilteredWaters = useCallback(() => {
-    if (!mapRef.current || filteredWaters.length === 0) return
-
-    const coordinates = filteredWaters.map((bw) => ({
-      latitude: parseFloat(bw.samplingPointPosition.latitude),
-      longitude: parseFloat(bw.samplingPointPosition.longitude),
-    }))
-
-    if (coordinates.length > 0) {
-      mapRef.current.fitToCoordinates(coordinates, {
-        edgePadding: DEFAULT_PADDING,
-        animated: true,
-      })
-
-      // Nudge camera to fix gray screen on some devices
-      setTimeout(() => {
-        mapRef.current?.getCamera().then((camera) => {
-          mapRef.current?.animateCamera(
-            {
-              center: {
-                latitude: camera.center.latitude + 0.0001,
-                longitude: camera.center.longitude + 0.0001,
-              },
-              pitch: camera.pitch,
-              heading: camera.heading,
-              altitude: camera.altitude,
-              zoom: camera.zoom,
-            },
-            { duration: 100 }
-          )
-        })
-      }, 500)
-    }
-  }, [filteredWaters])
+  if (!hydrated || !isOnboarded) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="dodgerblue" />
+      </View>
+    )
+  }
 
   if (isLoading) {
     return (
