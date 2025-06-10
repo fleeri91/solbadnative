@@ -1,9 +1,8 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { InteractionManager, StyleSheet, View } from 'react-native'
 import MapView, { Region } from 'react-native-maps'
-import { ActivityIndicator, IconButton, Text } from 'react-native-paper'
+import { ActivityIndicator, Text } from 'react-native-paper'
 
 import { Map } from '@/components/Map'
 import MapFilter from '@/components/MapFilter'
@@ -13,8 +12,8 @@ import { useUserStore } from '@/store/useUser'
 
 import { useFilteredBathingWaters } from '@/hooks/useFilteredBathingWaters'
 
-import { GeoPosition, useGeolocation } from '@/lib/geolocation'
 import { useBathingWaters } from '@/lib/queries'
+import { GeoPosition, useGeolocationStore } from '@/store/useGeolocation'
 
 const DEFAULT_PADDING = {
   top: 50,
@@ -47,7 +46,7 @@ export default function Index() {
   }, [hydrated, isOnboarded])
 
   const { data, isLoading, isError } = useBathingWaters()
-  const { getCurrentLocation, loading: locating } = useGeolocation()
+  const { getCurrentLocation, loading: locating } = useGeolocationStore()
   const [myLocation, setMyLocation] = useState<GeoPosition | null>(null)
   const mapRef = useRef<MapView>(null)
 
@@ -134,6 +133,7 @@ export default function Index() {
         myLocation={myLocation}
       />
       <MapFilter />
+      {/*
       <View style={styles.buttonContainer}>
         <IconButton
           icon={() => (
@@ -146,6 +146,7 @@ export default function Index() {
           style={styles.myLocationButton}
         />
       </View>
+      */}
     </View>
   )
 }
