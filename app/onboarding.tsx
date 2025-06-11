@@ -5,46 +5,19 @@ import { Dimensions, StyleSheet, View } from 'react-native'
 import { SheetManager } from 'react-native-actions-sheet'
 import { useTheme } from 'react-native-paper'
 import Animated, {
-  Extrapolation,
-  interpolate,
-  SharedValue,
   useAnimatedScrollHandler,
-  useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
 
-import OnboardingSlide from '@/components/OnboardingSlide'
+import { OnboardingSlide, StepIndicator } from '@/components/Onboarding'
 
 import { MunicipalityName } from '@/constants/municipalities'
 
-import { useGeolocation } from '@/lib/geolocation'
-
+import { useGeolocationStore } from '@/store/useGeolocation'
 import { useMapFilterStore } from '@/store/useMapFilter'
-import { useUserStore } from '@/store/useUser'
+import { useOnboardingStore } from '@/store/useOnboarding'
 
 const { width } = Dimensions.get('window')
-
-function useDotAnimatedStyle(
-  scrollX: SharedValue<number>,
-  index: number,
-  color: string
-) {
-  return useAnimatedStyle(() => {
-    const dotWidth = interpolate(
-      scrollX.value,
-      [(index - 1) * width, index * width, (index + 1) * width],
-      [6, 12, 6],
-      Extrapolation.CLAMP
-    )
-    return {
-      width: dotWidth,
-      height: 6,
-      borderRadius: 3,
-      marginHorizontal: 4,
-      backgroundColor: color,
-    }
-  })
-}
 
 export default function OnboardingScreen() {
   const scrollX = useSharedValue(0)
@@ -54,8 +27,8 @@ export default function OnboardingScreen() {
 
   const theme = useTheme()
 
-  const { getCurrentLocation } = useGeolocation()
-  const setIsOnboarded = useUserStore((s) => s.setIsOnboarded)
+  const { getCurrentLocation } = useGeolocationStore()
+  const setIsOnboarded = useOnboardingStore((s) => s.setIsOnboarded)
   const setMunicipality = useMapFilterStore((s) => s.setMunicipality)
 
   const [selected, setSelected] = useState<MunicipalityName | ''>('')
@@ -79,6 +52,13 @@ export default function OnboardingScreen() {
     }
   }
 
+  const handleNavigateSlide = (index: number) => {
+    scrollRef.current?.scrollTo({
+      x: index * width,
+      animated: true,
+    })
+  }
+
   const slides = [
     {
       key: 'intro',
@@ -98,7 +78,7 @@ export default function OnboardingScreen() {
             />
           }
           description="Appen som hjälper dig att utforska badplater."
-          button={{ onClick: () => null, title: 'Kom igång' }}
+          button={{ onClick: () => handleNavigateSlide(1), title: 'Kom igång' }}
         />
       ),
     },
@@ -179,13 +159,9 @@ export default function OnboardingScreen() {
     },
   })
 
-  const dot0Style = useDotAnimatedStyle(scrollX, 0, theme.colors.primary)
-  const dot1Style = useDotAnimatedStyle(scrollX, 1, theme.colors.primary)
-  const dot2Style = useDotAnimatedStyle(scrollX, 2, theme.colors.primary)
-  const dot3Style = useDotAnimatedStyle(scrollX, 3, theme.colors.primary)
-
-  const dotStyles = [dot0Style, dot1Style, dot2Style, dot3Style]
-
+  const dotStyles = slides.map((_, i) =>
+    StepIndicator(scrollX, i, theme.colors.primary, width)
+  )
   return (
     <View
       style={{ ...styles.fullscreen, backgroundColor: theme.colors.background }}
