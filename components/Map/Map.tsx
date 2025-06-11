@@ -1,4 +1,5 @@
 import { BathingWater } from '@/types/BathingWater/BathingWaters'
+import { LocationObject } from 'expo-location'
 import React, { useState } from 'react'
 import { StyleSheet } from 'react-native'
 import MapView, { Region } from 'react-native-maps'
@@ -7,7 +8,7 @@ import BathingWaterMarker from './BathingWaterMarker'
 interface MapProps {
   bathingWaters: BathingWater[]
   mapRef: React.RefObject<MapView | null>
-  myLocation: { latitude: number; longitude: number } | null
+  myLocation: LocationObject | null
 }
 
 export default function Map({ bathingWaters, mapRef, myLocation }: MapProps) {
