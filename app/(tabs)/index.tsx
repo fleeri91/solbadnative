@@ -12,6 +12,7 @@ import { useOnboardingStore } from '@/store/useOnboarding'
 
 import { useFilteredBathingWaters } from '@/hooks/useFilteredBathingWaters'
 
+import DetailCard from '@/components/DetailCard'
 import { useBathingWaters } from '@/lib/queries'
 import { useGeolocationStore } from '@/store/useGeolocation'
 
@@ -32,7 +33,7 @@ export default function Index() {
   const allWaters = data?.watersAndAdvisories.map((w) => w.bathingWater) || []
   const filteredWaters = useFilteredBathingWaters(allWaters)
 
-  const { municipality } = useMapFilterStore()
+  const { municipality, selectedBathingWater } = useMapFilterStore()
 
   useEffect(() => {
     if (!mapRef.current || filteredWaters.length === 0) return
@@ -88,6 +89,9 @@ export default function Index() {
         myLocation={geolocation}
       />
       <MapFilter />
+      {selectedBathingWater && (
+        <DetailCard bathingWaters={[selectedBathingWater]} />
+      )}
     </View>
   )
 }
