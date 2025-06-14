@@ -47,8 +47,6 @@ export default function OnboardingScreen() {
   const handleSetMunicipality = async () => {
     if (selected) {
       setMunicipality(selected)
-      setIsOnboarded(true)
-      router.replace('/')
     }
   }
 
@@ -57,6 +55,11 @@ export default function OnboardingScreen() {
       x: index * width,
       animated: true,
     })
+  }
+
+  const handleFinalizeOnboarding = () => {
+    setIsOnboarded(true)
+    router.replace('/')
   }
 
   const slides = [
@@ -147,7 +150,10 @@ export default function OnboardingScreen() {
             />
           }
           description=""
-          button={{ onClick: () => null, title: 'Utforska' }}
+          button={{
+            onClick: () => handleFinalizeOnboarding(),
+            title: 'Utforska',
+          }}
         />
       ),
     },
