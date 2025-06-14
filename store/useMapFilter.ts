@@ -1,14 +1,17 @@
-import { municipalities, MunicipalityName } from '@/constants/municipalities'
+import { MunicipalityName } from '@/constants/municipalities'
+import { BathingWater } from '@/types/BathingWater/BathingWaters'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { create } from 'zustand'
 import { createJSONStorage, persist, PersistOptions } from 'zustand/middleware'
 
 export type MapFilterState = {
   municipality: MunicipalityName | null
+  selectedBathingWater: BathingWater | null
 }
 
 type MapFilterActions = {
   setMunicipality: (value: MunicipalityName | null) => void
+  setBathingWater: (value: BathingWater | null) => void
   reset: () => void
 }
 
@@ -16,6 +19,7 @@ type MapFilterStore = MapFilterState & MapFilterActions
 
 const initialState: MapFilterState = {
   municipality: null,
+  selectedBathingWater: null,
 }
 
 export const useMapFilterStore = create<MapFilterStore>()(
@@ -23,12 +27,14 @@ export const useMapFilterStore = create<MapFilterStore>()(
     (set) => ({
       ...initialState,
       setMunicipality: (value) => set({ municipality: value }),
+      setBathingWater: (value) => set({ selectedBathingWater: value }),
       reset: () => set(initialState),
     }),
     {
       name: 'mapfilter-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state: MapFilterStore): MapFilterState => ({
+        ...initialState,
         municipality: state.municipality,
       }),
       onRehydrateStorage: () => (state, error: Error | undefined) => {
@@ -43,21 +49,3 @@ export const useMapFilterStore = create<MapFilterStore>()(
     } as PersistOptions<MapFilterStore, MapFilterState>
   )
 )
-
-function isValidMunicipality(value: MunicipalityName | null) {
-  return (
-    value === null ||
-    (typeof value === 'string' &&
-      municipalities.includes(value as MunicipalityName))
-  )
-}
-
-export const clearMapFilterStorage = async () => {
-  try {
-    await AsyncStorage.removeItem('mapfilter-storage')
-    console.log('Cleared mapfilter-storage')
-    useMapFilterStore.getState().reset()
-  } catch (error) {
-    console.error('Error clearing mapfilter-storage:', error)
-  }
-}
