@@ -1,3 +1,4 @@
+import { useMapFilterStore } from '@/store/useMapFilter'
 import { BathingWater } from '@/types/BathingWater/BathingWaters'
 import { LocationObject } from 'expo-location'
 import React, { useState } from 'react'
@@ -13,6 +14,8 @@ interface MapProps {
 
 export default function Map({ bathingWaters, mapRef, myLocation }: MapProps) {
   const [zoomLevel, setZoomLevel] = useState(12)
+
+  const setBathingWater = useMapFilterStore((state) => state.setBathingWater)
 
   const handleRegionChangeComplete = (region: Region) => {
     const zoom = Math.round(Math.log2(360 / region.latitudeDelta))
@@ -31,6 +34,7 @@ export default function Map({ bathingWaters, mapRef, myLocation }: MapProps) {
           key={water.id}
           water={water}
           zoomLevel={zoomLevel}
+          setSelectedWater={setBathingWater}
         />
       ))}
     </MapView>

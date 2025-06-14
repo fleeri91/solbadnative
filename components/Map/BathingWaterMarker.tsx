@@ -7,9 +7,14 @@ import { Marker } from 'react-native-maps'
 type Props = {
   water: BathingWater
   zoomLevel: number
+  setSelectedWater: (bathingWater: BathingWater) => void
 }
 
-export default function BathingWaterMarker({ water, zoomLevel }: Props) {
+export default function BathingWaterMarker({
+  water,
+  zoomLevel,
+  setSelectedWater,
+}: Props) {
   const latitude = parseFloat(water.samplingPointPosition.latitude)
   const longitude = parseFloat(water.samplingPointPosition.longitude)
 
@@ -30,7 +35,7 @@ export default function BathingWaterMarker({ water, zoomLevel }: Props) {
 
   const onSelect = (water: BathingWater) => {
     if (zoomLevel > 11) {
-      console.log(water.name)
+      setSelectedWater(water)
     }
   }
 
