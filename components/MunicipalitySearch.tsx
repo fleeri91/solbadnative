@@ -41,8 +41,7 @@ export default function MunicipalitySearch({ value, onChange }: Props) {
         label="Sök kommun"
         value={searchQuery}
         onChangeText={setSearchQuery}
-        mode="flat"
-        style={styles.input}
+        mode="outlined"
       />
       <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
         <List.Section>
@@ -66,11 +65,8 @@ export default function MunicipalitySearch({ value, onChange }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 4,
     paddingTop: 20,
-  },
-  input: {
-    marginBottom: 10,
   },
   scrollView: {
     flex: 1,

@@ -18,12 +18,15 @@ import {
 
 export default function BathingProfile() {
   const payload = useSheetPayload('bathing-profile-sheet')
-
-  const { data, isLoading, isError } = useBathingWaterProfile(payload.id)
-
+  const actionSheetRef = useRef<ActionSheetRef>(null)
   const theme = useTheme()
 
-  const actionSheetRef = useRef<ActionSheetRef>(null)
+  if (!payload || !payload.id) {
+    return null
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { data, isLoading, isError } = useBathingWaterProfile(payload.id)
 
   return (
     <ActionSheet

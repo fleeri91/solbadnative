@@ -5,8 +5,8 @@ import { Stack, useRouter, useSegments } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { useCallback, useEffect, useState } from 'react'
 import { useColorScheme } from 'react-native'
-import { SheetProvider } from 'react-native-actions-sheet'
-import { PaperProvider } from 'react-native-paper'
+import { SheetManager, SheetProvider } from 'react-native-actions-sheet'
+import { Appbar, PaperProvider } from 'react-native-paper'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { darkTheme, lightTheme } from '@/constants/theme'
@@ -90,7 +90,7 @@ export default function RootLayout() {
                     headerStyle: {
                       backgroundColor: isDark ? '#0a0a0a' : '#fafafa',
                     },
-                    headerShadowVisible: false,
+                    headerShadowVisible: true,
                     headerTitleStyle: {
                       color: isDark ? '#fafafa' : '#0a0a0a',
                       fontWeight: '600',
@@ -98,8 +98,26 @@ export default function RootLayout() {
                   }}
                 >
                   <Stack.Screen
-                    name="(tabs)"
-                    options={{ headerShown: false }}
+                    name="index"
+                    options={{
+                      title: 'index',
+                      headerTitle: 'Hitta Badplats',
+                      headerLeft: () => (
+                        <>
+                          <Appbar.Action icon="menu" onPress={() => {}} />
+                        </>
+                      ),
+                      headerRight: () => (
+                        <>
+                          <Appbar.Action
+                            icon="filter"
+                            onPress={() =>
+                              SheetManager.show('map-filter-sheet')
+                            }
+                          />
+                        </>
+                      ),
+                    }}
                   />
                   <Stack.Screen
                     name="onboarding"

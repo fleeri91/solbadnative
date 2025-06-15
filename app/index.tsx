@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   InteractionManager,
   StyleSheet,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native'
 import MapView, { Region } from 'react-native-maps'
@@ -13,6 +12,8 @@ import { useTheme } from 'react-native-paper'
 import BathingWaterMarker from '@/components/BathingWaterMarker'
 import MapFilter from '@/components/MapFilter'
 
+import BathingProfile from '@/components/BathingProfile'
+import { DetailCardCarousel } from '@/components/DetailCard'
 import { useFilteredBathingWaters } from '@/hooks/useFilteredBathingWaters'
 import { useBathingWaters } from '@/lib/queries'
 import { useGeolocationStore } from '@/store/useGeolocation'
@@ -102,28 +103,30 @@ export default function Index() {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={() => setBathingWater(null)}>
-      <View style={styles.container}>
-        <MapView
-          ref={mapRef}
-          onMapReady={() => setIsMapReady(true)}
-          style={StyleSheet.absoluteFillObject}
-          showsUserLocation={!!geolocation}
-          onRegionChangeComplete={handleRegionChangeComplete}
-        >
-          {isMapReady &&
-            filteredWaters.map((water) => (
-              <BathingWaterMarker
-                key={water.id}
-                water={water}
-                zoomLevel={zoomLevel}
-                setSelectedWater={setBathingWater}
-              />
-            ))}
-        </MapView>
-        <MapFilter />
-      </View>
-    </TouchableWithoutFeedback>
+    <View style={styles.container}>
+      <MapView
+        ref={mapRef}
+        onMapReady={() => setIsMapReady(true)}
+        style={StyleSheet.absoluteFillObject}
+        showsUserLocation={!!geolocation}
+        onRegionChangeComplete={handleRegionChangeComplete}
+      >
+        {isMapReady &&
+          filteredWaters.map((water) => (
+            <BathingWaterMarker
+              key={water.id}
+              water={water}
+              zoomLevel={zoomLevel}
+              setSelectedWater={setBathingWater}
+            />
+          ))}
+      </MapView>
+      <MapFilter />
+      <BathingProfile />
+      {filteredWaters.length > 0 && (
+        <DetailCardCarousel bathingWaters={filteredWaters} />
+      )}
+    </View>
   )
 }
 
