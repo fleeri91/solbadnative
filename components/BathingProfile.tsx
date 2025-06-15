@@ -1,5 +1,4 @@
 import { useBathingWaterProfile } from '@/lib/queries'
-import { BathingWaterProfile } from '@/types/BathingWater/BathingWaterProfile'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useRef } from 'react'
 import { Linking, Platform, ScrollView, StyleSheet, View } from 'react-native'
@@ -13,7 +12,6 @@ import {
   Button,
   Divider,
   IconButton,
-  Surface,
   Text,
   useTheme,
 } from 'react-native-paper'
@@ -27,39 +25,6 @@ export default function BathingProfile() {
 
   const actionSheetRef = useRef<ActionSheetRef>(null)
 
-  if (isLoading) {
-    return (
-      <Surface
-        style={[styles.centered, { backgroundColor: theme.colors.background }]}
-      >
-        <ActivityIndicator
-          size="large"
-          animating
-          color={theme.colors.primary}
-        />
-      </Surface>
-    )
-  }
-
-  if (isError || !data) {
-    return (
-      <Surface
-        style={[styles.centered, { backgroundColor: theme.colors.background }]}
-      >
-        <Text>Ett fel uppstod</Text>
-      </Surface>
-    )
-  }
-
-  const profile = data as BathingWaterProfile
-  const { bathingWater, lastFourClassifications, bathingSeason } = profile
-  const { latitude, longitude } = bathingWater.samplingPointPosition
-
-  const navigationUrl =
-    Platform.OS === 'ios'
-      ? `http://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=d`
-      : `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`
-
   return (
     <ActionSheet
       ref={actionSheetRef}
@@ -67,97 +32,123 @@ export default function BathingProfile() {
       indicatorStyle={{ width: 100 }}
       closable
       disableDragBeyondMinimumSnapPoint
-      containerStyle={{ height: '90%' }}
+      containerStyle={{ height: '95%', backgroundColor: theme.colors.surface }}
       springOffset={300}
     >
-      <View style={styles.topBar}>
-        <View style={styles.topBarInfo}>
-          <Text
-            variant="titleLarge"
-            style={{ color: theme.colors.onBackground }}
-          >
-            {bathingWater.name}
-          </Text>
-          <Text
-            variant="titleSmall"
-            style={{ color: theme.colors.onBackground, marginBottom: 12 }}
-          >
-            {`${bathingWater.municipality.name} kommun`}
-          </Text>
-        </View>
-        <View style={styles.topBarClose}>
-          <IconButton
-            icon={() => <MaterialIcons name="close" size={24} color="black" />}
-            onPress={() => SheetManager.hide('bathing-profile-sheet')}
+      {isLoading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator
+            size="large"
+            animating
+            color={theme.colors.primary}
           />
         </View>
-      </View>
-      <ScrollView
-        style={{ backgroundColor: theme.colors.background }}
-        contentContainerStyle={[
-          styles.container,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
-        <Text
-          variant="titleSmall"
-          style={{ color: theme.colors.onBackground, marginBottom: 16 }}
-        >
-          {bathingWater.description}
-        </Text>
+      ) : isError || !data ? (
+        <View style={styles.centered}>
+          <Text>Ett fel uppstod</Text>
+        </View>
+      ) : (
+        <>
+          <View style={styles.topBar}>
+            <View style={styles.topBarInfo}>
+              <Text
+                variant="titleLarge"
+                style={{ color: theme.colors.onSurface }}
+              >
+                {data.bathingWater.name}
+              </Text>
+              <Text
+                variant="titleSmall"
+                style={{ color: theme.colors.onSurface, marginBottom: 12 }}
+              >
+                {`${data.bathingWater.municipality.name} kommun`}
+              </Text>
+            </View>
+            <View style={styles.topBarClose}>
+              <IconButton
+                icon={() => (
+                  <MaterialIcons
+                    name="close"
+                    size={24}
+                    color={theme.colors.onSurface}
+                  />
+                )}
+                onPress={() => SheetManager.hide('bathing-profile-sheet')}
+              />
+            </View>
+          </View>
 
-        <Text
-          variant="titleMedium"
-          style={{ color: theme.colors.onBackground, marginBottom: 8 }}
-        >
-          Badperiod
-        </Text>
-        <Text style={{ color: theme.colors.onBackground }}>
-          {new Date(bathingSeason.startsAt).toLocaleDateString()} -{' '}
-          {new Date(bathingSeason.endsAt).toLocaleDateString()}
-        </Text>
+          <ScrollView contentContainerStyle={[styles.container]}>
+            <Text
+              variant="titleSmall"
+              style={{ color: theme.colors.onSurface, marginBottom: 16 }}
+            >
+              {data.bathingWater.description}
+            </Text>
 
-        <Divider style={styles.divider} />
+            <Text
+              variant="titleMedium"
+              style={{ color: theme.colors.onSurface, marginBottom: 8 }}
+            >
+              Badperiod
+            </Text>
+            <Text style={{ color: theme.colors.onSurface }}>
+              {new Date(data.bathingSeason.startsAt).toLocaleDateString()} -{' '}
+              {new Date(data.bathingSeason.endsAt).toLocaleDateString()}
+            </Text>
 
-        <Text
-          variant="titleMedium"
-          style={{ color: theme.colors.onBackground, marginBottom: 8 }}
-        >
-          Kvalitetsklassificering (senaste 4 åren)
-        </Text>
-        {lastFourClassifications.map((c) => (
-          <Text key={c.year} style={{ color: theme.colors.onBackground }}>
-            {c.year}: {c.qualityClassIdText}
-          </Text>
-        ))}
+            <Divider style={styles.divider} />
 
-        <Divider style={styles.divider} />
+            <Text
+              variant="titleMedium"
+              style={{ color: theme.colors.onSurface, marginBottom: 8 }}
+            >
+              Kvalitetsklassificering (senaste 4 åren)
+            </Text>
+            {data.lastFourClassifications.map((c) => (
+              <Text key={c.year} style={{ color: theme.colors.onSurface }}>
+                {c.year}: {c.qualityClassIdText}
+              </Text>
+            ))}
 
-        <Text
-          variant="titleMedium"
-          style={{ color: theme.colors.onBackground, marginBottom: 8 }}
-        >
-          Kontaktinformation
-        </Text>
-        <Text style={{ color: theme.colors.onBackground }}>
-          Kommun: {bathingWater.municipality.contactInfo.name}
-        </Text>
-        {bathingWater.municipality.contactInfo.email && (
-          <Text style={{ color: theme.colors.onBackground }}>
-            E-post: {bathingWater.municipality.contactInfo.email}
-          </Text>
-        )}
-        {bathingWater.municipality.contactInfo.phone && (
-          <Text style={{ color: theme.colors.onBackground }}>
-            Telefon: {bathingWater.municipality.contactInfo.phone}
-          </Text>
-        )}
+            <Divider style={styles.divider} />
 
-        <Divider style={styles.divider} />
-        <Button mode="contained" onPress={() => Linking.openURL(navigationUrl)}>
-          Navigera till badplats
-        </Button>
-      </ScrollView>
+            <Text
+              variant="titleMedium"
+              style={{ color: theme.colors.onSurface, marginBottom: 8 }}
+            >
+              Kontaktinformation
+            </Text>
+            <Text style={{ color: theme.colors.onSurface }}>
+              Kommun: {data.bathingWater.municipality.contactInfo.name}
+            </Text>
+            {data.bathingWater.municipality.contactInfo.email && (
+              <Text style={{ color: theme.colors.onSurface }}>
+                E-post: {data.bathingWater.municipality.contactInfo.email}
+              </Text>
+            )}
+            {data.bathingWater.municipality.contactInfo.phone && (
+              <Text style={{ color: theme.colors.onSurface }}>
+                Telefon: {data.bathingWater.municipality.contactInfo.phone}
+              </Text>
+            )}
+
+            <Divider style={styles.divider} />
+            <Button
+              mode="contained"
+              onPress={() =>
+                Linking.openURL(
+                  Platform.OS === 'ios'
+                    ? `http://maps.apple.com/?daddr=${data.bathingWater.samplingPointPosition.latitude},${data.bathingWater.samplingPointPosition.longitude}&dirflg=d`
+                    : `https://www.google.com/maps/dir/?api=1&destination=${data.bathingWater.samplingPointPosition.latitude},${data.bathingWater.samplingPointPosition.longitude}&travelmode=driving`
+                )
+              }
+            >
+              Navigera till badplats
+            </Button>
+          </ScrollView>
+        </>
+      )}
     </ActionSheet>
   )
 }

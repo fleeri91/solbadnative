@@ -57,6 +57,7 @@ export default function TabsLayout() {
         options={{
           title: 'Lista',
           headerTitle: '',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="list" size={size} color={color} />
           ),

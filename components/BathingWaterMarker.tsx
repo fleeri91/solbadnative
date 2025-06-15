@@ -34,9 +34,7 @@ export default function BathingWaterMarker({
   }
 
   const onSelect = (water: BathingWater) => {
-    if (zoomLevel > 11) {
-      setSelectedWater(water)
-    }
+    setSelectedWater(water)
   }
 
   return (

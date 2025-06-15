@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Keyboard,
   SafeAreaView,
@@ -6,37 +5,20 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native'
-import { SegmentedButtons } from 'react-native-paper'
+import { useTheme } from 'react-native-paper'
 
 import BathingWaterSearch from '@/components/BathingWaterSearch'
-import { WaterTypeId } from '@/types/BathingWater/WaterType'
 
 export default function SearchView() {
-  const [segment, setSegment] = useState<string>('sea')
+  const { colors } = useTheme()
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.container}>
-        <SegmentedButtons
-          value={segment}
-          onValueChange={setSegment}
-          style={styles.segmentedButtons}
-          buttons={[
-            {
-              value: 'sea',
-              label: 'Hav',
-            },
-            {
-              value: 'lake',
-              label: 'Sjö',
-            },
-          ]}
-        />
-
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.content}>
-          <BathingWaterSearch
-            waterType={segment === 'sea' ? WaterTypeId.HAV : WaterTypeId.SJÖ}
-          />
+          <BathingWaterSearch />
         </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
@@ -46,15 +28,8 @@ export default function SearchView() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
-  },
-  segmentedButtons: {
-    padding: 24,
   },
   content: {
     flex: 1,
-    width: '100%',
-    padding: 24,
-    alignItems: 'center',
   },
 })

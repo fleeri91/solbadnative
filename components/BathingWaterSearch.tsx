@@ -1,22 +1,25 @@
 import { useMemo, useState } from 'react'
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native'
 import { List, TextInput, useTheme } from 'react-native-paper'
 
 import { useBathingWaters } from '@/lib/queries'
 import { WatersAndAdvisory } from '@/types/BathingWater/BathingWaters'
-import { WaterTypeId } from '@/types/BathingWater/WaterType'
 import { SheetManager } from 'react-native-actions-sheet'
 
 interface BathingWaterSearchProps {
   placeholder?: string
   label?: string
-  waterType: WaterTypeId
 }
 
 export default function BathingWaterSearch({
-  placeholder = 'Sök badplats',
-  label = '',
-  waterType,
+  placeholder = '',
+  label = 'Sök badplats',
 }: BathingWaterSearchProps) {
   const [query, setQuery] = useState('')
   const { colors } = useTheme()
@@ -25,24 +28,20 @@ export default function BathingWaterSearch({
   const filteredData = useMemo(() => {
     if (!data || !query) return []
 
-    const isSea = waterType === 1
     const lower = query.toLowerCase()
 
     return data.watersAndAdvisories
       .filter(({ bathingWater }) => {
-        const nameMatch = bathingWater.name.toLowerCase().startsWith(lower) // stricter start match
+        const nameMatch = bathingWater.name.toLowerCase().startsWith(lower)
         const muniMatch = bathingWater.municipality.name
           .toLowerCase()
-          .startsWith(lower) // stricter start match
-        const typeMatch = isSea
-          ? bathingWater.waterTypeId === 1
-          : bathingWater.waterTypeId === 3
+          .startsWith(lower)
 
-        return (nameMatch || muniMatch) && typeMatch
+        return nameMatch || muniMatch
       })
-      .sort((a, b) => a.bathingWater.name.localeCompare(b.bathingWater.name)) // ascending sort
+      .sort((a, b) => a.bathingWater.name.localeCompare(b.bathingWater.name))
       .slice(0, 20)
-  }, [query, data, waterType])
+  }, [query, data])
 
   const handleSelect = (item: WatersAndAdvisory) => {
     setQuery(item.bathingWater.name)
@@ -53,7 +52,10 @@ export default function BathingWaterSearch({
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <TextInput
         label={label}
         placeholder={placeholder}
@@ -61,48 +63,37 @@ export default function BathingWaterSearch({
         onChangeText={setQuery}
         mode="outlined"
         style={styles.input}
-        disabled={isLoading || isError}
       />
-
-      {filteredData.length > 0 && (
-        <ScrollView
-          style={styles.listContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          <List.Section style={styles.list}>
-            {filteredData.map((item) => (
-              <TouchableOpacity
-                key={item.bathingWater.id}
-                onPress={() => handleSelect(item)}
-              >
-                <List.Item
-                  title={item.bathingWater.name}
-                  description={item.bathingWater.municipality.name}
-                  titleStyle={{ color: colors.onSurface }}
-                />
-              </TouchableOpacity>
-            ))}
-          </List.Section>
-        </ScrollView>
-      )}
-    </View>
+      <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+        <List.Section>
+          {filteredData.map((item) => (
+            <TouchableOpacity
+              key={item.bathingWater.id}
+              onPress={() => handleSelect(item)}
+            >
+              <List.Item
+                title={item.bathingWater.name}
+                description={item.bathingWater.municipality.name}
+                titleStyle={{ color: colors.onSurface }}
+              />
+            </TouchableOpacity>
+          ))}
+        </List.Section>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    marginTop: 20,
+    flex: 1,
+    paddingHorizontal: 4,
+    paddingTop: 20,
   },
   input: {
-    marginBottom: 5,
+    marginHorizontal: 8,
   },
-  listContainer: {
-    maxHeight: 200,
-    borderRadius: 4,
-    elevation: 2,
-  },
-  list: {
-    borderRadius: 4,
+  scrollView: {
+    flex: 1,
   },
 })
